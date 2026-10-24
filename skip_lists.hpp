@@ -1,4 +1,5 @@
 #include <list>
+#include <optional>
 
 template <typename K, typename V> struct Node {
   K key;
@@ -9,10 +10,18 @@ template <typename K, typename V> struct Node {
 template <typename K, typename V> class skip_list {
 public:
   skip_list();
-  auto insert(K key)
+  auto insert(K key, V value)
       -> void; // if the value is different this will only update the value
-  auto get(K key) -> V;
+  auto get(K key) -> std::optional<V>;
   auto erase(K key) -> void;
 };
 
-template <typename K, typename V> auto skip_list<K, V>::insert(K key) -> void {}
+template <typename K, typename V>
+auto skip_list<K, V>::insert(K key, V value) -> void {}
+
+template <typename K, typename V>
+auto skip_list<K, V>::get(K key) -> std::optional<V> {
+  return std::nullopt;
+}
+
+template <typename K, typename V> auto skip_list<K, V>::erase(K key) -> void {}
