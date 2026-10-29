@@ -46,7 +46,8 @@ auto skip_list<K, V>::insert(K key, V value) -> void {
     st.emplace(t_ptr, i);
   }
 
-  auto prev = st.top();
+  typename std::list<Node<K, V>>::iterator prev;
+
   while (st.size() > 0) {
     auto [tp, index] = st.top();
     if (!tp->down) {
@@ -63,12 +64,11 @@ auto skip_list<K, V>::insert(K key, V value) -> void {
     }
   }
 
-  if (st.size() == 0 && flip_coin()) {
+  if ((st.size() == 0 && flip_coin()) || (tower.size() == 1)) {
     Node n{key, value, prev};
     std::list<typename Node<K, V>::iterator> l = {n};
     tower.push_back(l);
   }
-
 }
 
 template <typename K, typename V>
