@@ -1,10 +1,11 @@
+#pragma once
 #include <list>
 #include <optional>
 #include <random>
 #include <stack>
 #include <vector>
 
-bool flip_coin() {
+inline bool flip_coin() {
   // return true in case of heads and false in case of tails
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -21,6 +22,26 @@ template <typename K, typename V> struct Node {
 
 template <typename K, typename V> class skip_list {
   std::vector<std::list<Node<K, V>>> tower;
+
+  auto get_list_iterator(K key) -> std::optional<
+      std::pair<typename std::list<Node<K, V>>::iterator, int>> {
+    auto start = tower.back().begin();
+    int index = tower.size() - 1;
+    while (start != std::nullopt) {
+      if (start->key == key) {
+        return {start, index};
+      } else {
+        auto nxt = std::next(start);
+        if ((nxt->key) > key) {
+          start = start->down;
+          index -= 1;
+        } else {
+          start = nxt;
+        }
+      }
+    }
+    return std::nullopt;
+  }
 
 public:
   skip_list();
@@ -73,7 +94,24 @@ auto skip_list<K, V>::insert(K key, V value) -> void {
 
 template <typename K, typename V>
 auto skip_list<K, V>::get(K key) -> std::optional<V> {
+  auto iterator = get_list_iterator(key);
+  if (iterator) {
+    auto [it, index] = iterator.value();
+    return it->value;
+  }
   return std::nullopt;
 }
 
-template <typename K, typename V> auto skip_list<K, V>::erase(K key) -> void {}
+template <typename K, typename V> auto skip_list<K, V>::erase(K key) -> void {
+  auto iterator = get_list_iterator(key);
+  if (iterator) {
+    auto [it, index] = iterator.value();
+    while (it && it->down) {
+      auto nxt = it->down;
+      tower[index].erase(it);
+      index -= 1;
+      it = nxt;
+    }
+  }
+}
+
