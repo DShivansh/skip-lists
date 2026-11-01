@@ -1,3 +1,2 @@
 CompileFlags:
-  Compiler: /usr/bin/g++-15
-  Add: [-std=c++23]
+  CompilationDatabase: build

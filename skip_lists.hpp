@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+// #include <iostream>
 #include <list>
 #include <optional>
 #include <random>
@@ -25,11 +25,10 @@ template <typename K, typename V> class skip_list {
   std::vector<std::list<Node<K, V>>> tower;
 
   auto get_list_iterator(K key) -> std::optional<std::pair<typename std::list<Node<K, V>>::iterator, int>> {
-
     std::optional<typename std::list<Node<K, V>>::iterator> start = tower.back().begin();
     // std::cout << "key is " << key << std::endl;
     int index = tower.size() - 1;
-    while (start && index >= 0) {
+    while (start && start.value() != tower[index].end() && index >= 0) {
       // std::cout << "index is " << index << " start is " << start.value()->key << std::endl;
 
       if (start.value()->key == key) {
@@ -45,7 +44,7 @@ template <typename K, typename V> class skip_list {
         }
       } else {
         auto nxt = std::next(start.value());
-        if ((nxt->key) > key || nxt == tower[index].end()) {
+        if (nxt == tower[index].end() || (nxt->key) > key) {
           start = start.value()->down;
           index -= 1;
         } else {
@@ -76,6 +75,14 @@ template <typename K, typename V> auto skip_list<K, V>::insert(K key, V value) -
         if (t_ptr_nxt == tower[i].end() || t_ptr_nxt->key > key) {
           // std::cout << "entering the if block inside the while " << std::endl;
           // std::cout << "t_ptr is " << t_ptr.value()->key << std::endl;
+          if (t_ptr.value()->key > key) {
+
+            if (i - 1 >= 0) {
+              st.emplace(t_ptr.value(), i);
+              t_ptr = tower[i - 1].begin();
+              break;
+            }
+          }
           if (t_ptr_nxt != tower[i].end()) {
             // std::cout << "t_ptr_nxt is " << t_ptr_nxt->key << std::endl;
           }
@@ -98,7 +105,7 @@ template <typename K, typename V> auto skip_list<K, V>::insert(K key, V value) -
     if (!tp->down) {
       // std::cout << "at the base " << std::endl;
       Node n{key, value, std::nullopt};
-      if (tp == tower[index].end()) {
+      if (tp == tower[index].end() || tp->key > key) {
         prev = tower[index].insert(tp, n);
       } else {
         prev = tower[index].insert(std::next(tp), n);
@@ -106,7 +113,7 @@ template <typename K, typename V> auto skip_list<K, V>::insert(K key, V value) -
     } else {
       if (flip_coin()) {
         Node n{key, value, prev};
-        if (tp == tower[index].end()) {
+        if (tp == tower[index].end() || tp->key > key) {
           prev = tower[index].insert(tp, n);
         } else {
           prev = tower[index].insert(std::next(tp), n);
@@ -127,10 +134,12 @@ template <typename K, typename V> auto skip_list<K, V>::insert(K key, V value) -
 }
 
 template <typename K, typename V> auto skip_list<K, V>::get(K key) -> std::optional<V> {
-  auto iterator = get_list_iterator(key);
-  if (iterator) {
-    auto [it, index] = iterator.value();
-    return it->value;
+  if (tower.size() > 0) {
+    auto iterator = get_list_iterator(key);
+    if (iterator) {
+      auto [it, index] = iterator.value();
+      return it->value;
+    }
   }
   return std::nullopt;
 }
@@ -147,4 +156,3 @@ template <typename K, typename V> auto skip_list<K, V>::erase(K key) -> void {
     }
   }
 }
-
